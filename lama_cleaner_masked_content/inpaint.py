@@ -5,7 +5,7 @@ import logging
 from typing import Any
 from dataclasses import dataclass
 from modules.images import resize_image
-from modules import shared
+from modules import shared, errors
 
 try:
     from lib_controlnet import global_state
@@ -40,41 +40,20 @@ def convertIntoCNImageFromat(image):
     color = g_cn_HWC3(np.asarray(image).astype(np.uint8))
     return color
 
+  
+
+supported_preprocessor = None
 
 
-g_unload_lama = None
-def unloadLama(): # about 195 MB
-    global g_unload_lama
-    if g_unload_lama is None:
-        try:
-            from scripts.processor import unload_lama_inpaint
-            g_unload_lama = unload_lama_inpaint
-        except ImportError as e:
-            raise Exception("Controlnet is not installed for 'Lama Cleaner'")
-    g_unload_lama()
-    
-
-g_cn_lama_inpaint = None
 def lamaCNInpaint(image):
-    global g_cn_lama_inpaint
-    LOGGER = logging.getLogger('annotator.lama.saicinpainting.training.trainers.base')
-    oldPropagate = LOGGER.propagate
-    LOGGER.propagate = False
-    if g_cn_lama_inpaint is None:
-        try:
-            from scripts.processor import lama_inpaint
-            g_cn_lama_inpaint = lama_inpaint
-        except ImportError as e:
-            LOGGER.propagate = oldPropagate
-            raise Exception("Controlnet is not installed for 'Lama Cleaner'")
-    image, _ = g_cn_lama_inpaint(image)
-    LOGGER.propagate = oldPropagate
-    if shared.cmd_opts.lowvram or shared.cmd_opts.medvram:
-        unloadLama()
-    return image
+    global supported_preprocessor
+    if supported_preprocessor is None:
+        from scripts import supported_preprocessor
+    lama = supported_preprocessor.Preprocessor.get_preprocessor('inpaint_only+lama')
+    return lama(image, None)
 
 
-def lamaCNInpaintForge(image, mask):
+def lamaCNForgeInpaint(image, mask):
     lama = global_state.get_preprocessor('inpaint_only+lama')
     return lama(image, None, input_mask=mask)
 
@@ -138,7 +117,7 @@ def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str):
         image256 = image.resize((newW, newH))
         mask256 = mask.resize((newW, newH))
         if IS_WEBUI_FORGE:
-            tmpImage = lamaCNInpaintForge(convertIntoCNImageFromat(image256), convertIntoCNImageFromat(mask256))
+            tmpImage = lamaCNForgeInpaint(convertIntoCNImageFromat(image256), convertIntoCNImageFromat(mask256))
         else:
             tmpImage = lamaCNInpaint(convertIntoCNMaskedImageFromat(image256, mask256))
         tmpImage = convertImageIntoPILFormat(tmpImage)
