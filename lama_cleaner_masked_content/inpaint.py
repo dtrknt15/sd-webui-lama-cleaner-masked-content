@@ -22,7 +22,7 @@ def convertIntoCNMaskedImageFromat(image, mask):
             from annotator.util import HWC3
             g_cn_HWC3 = HWC3
         except ImportError as e:
-            raise Exception("Controlnet is not installed for 'Lama Cleaner'")
+            errors.report(e, exc_info=True)
 
     color = g_cn_HWC3(np.asarray(image).astype(np.uint8))
     alpha = g_cn_HWC3(np.asarray(mask.convert('L')).astype(np.uint8))[:, :, 0:1]
@@ -50,7 +50,7 @@ def lamaCNInpaint(image):
     if supported_preprocessor is None:
         from scripts import supported_preprocessor
     lama = supported_preprocessor.Preprocessor.get_preprocessor('inpaint_only+lama')
-    return lama(image, None)
+    return lama(image, None).value
 
 
 def lamaCNForgeInpaint(image, mask):
