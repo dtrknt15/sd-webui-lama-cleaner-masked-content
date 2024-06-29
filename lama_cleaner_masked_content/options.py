@@ -17,7 +17,7 @@ lama_cleaner_settings = {
                 "Upscaler for lama cleaner masked content",
                 gr.Dropdown,
                 lambda: {"choices": [x.name for x in shared.sd_upscalers]},
-            ),
+            ).info("I recommend to use Waifu2x upscaler from extension, because it's very fast and good enough for this purpose"),
 }
 
 shared.options_templates.update(shared.options_section(('upscaling', 'Upscaling'), lama_cleaner_settings))

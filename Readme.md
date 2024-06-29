@@ -36,7 +36,7 @@ Go to Settings -> Postprocessing -> Upscaling -> Upscaler for lama cleaner maske
 
 ![](images/options.jpg)
 
-Default is `ESRGAN_4x`
+Default is `ESRGAN_4x`. But I recommend to use Waifu2x upscaler from [my extension](https://github.com/light-and-ray/sd-webui-waifu2x-upscaler), because it's very fast and good enough for this purpose
 
 You can also add this options in ui, using "Settings for img2img"
 
