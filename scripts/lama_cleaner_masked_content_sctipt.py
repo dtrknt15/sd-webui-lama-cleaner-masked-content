@@ -32,8 +32,11 @@ class Script(modules.scripts.Script):
         if not (hasattr(p, "image_mask") and bool(p.image_mask)):
             return
 
+        padding = None
+        if p.inpaint_full_res:
+            padding = p.inpaint_full_res_padding
         p.init_images[0] = lamaInpaint(p.init_images[0], p.image_mask,
-                    p.inpainting_mask_invert, getLamaUpscaler(p))
+                    p.inpainting_mask_invert, getLamaUpscaler(p), padding)
         p.inpainting_fill = 1 # original
 
 

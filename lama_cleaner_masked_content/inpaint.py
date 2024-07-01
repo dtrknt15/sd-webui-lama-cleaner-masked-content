@@ -1,17 +1,32 @@
 import numpy as np
 from PIL import Image, ImageChops, ImageOps
 import copy
-import logging
 from typing import Any
 from dataclasses import dataclass
 from modules.images import resize_image
-from modules import shared, errors
+from modules import shared, errors, masking
+from modules.processing import apply_overlay
+
 
 try:
     from lib_controlnet import global_state
     IS_WEBUI_FORGE = True
 except ImportError:
     IS_WEBUI_FORGE = False
+
+
+def crop(image: Image.Image, origMask: Image.Image, padding: int):
+    return image.crop(masking.get_crop_region(origMask, padding))
+
+def uncrop(image: Image.Image, origImage: Image.Image, origMask: Image.Image, padding: int):
+    x1, y1, x2, y2 = masking.get_crop_region(origMask, padding)
+    paste_to = (x1, y1, x2-x1, y2-y1)
+    image_masked = Image.new('RGBa', (origImage.width, origImage.height))
+    image_masked.paste(origImage.convert("RGBA").convert("RGBa"), mask=ImageChops.invert(origMask))
+    overlay_image = image_masked.convert('RGBA')
+    return apply_overlay(image, paste_to, overlay_image)[0]
+
+
 
 
 g_cn_HWC3 = None
@@ -40,7 +55,7 @@ def convertIntoCNImageFromat(image):
     color = g_cn_HWC3(np.asarray(image).astype(np.uint8))
     return color
 
-  
+
 
 supported_preprocessor = None
 
@@ -82,12 +97,13 @@ class CacheData:
     mask: Any
     invert: Any
     upscaler: Any
+    padding: Any
     result: Any
 
 cachedData = None
 
 
-def limitSizeByMinDemention(image: Image, size):
+def limitSizeByMinDimension(image: Image, size):
     w, h = image.size
     k = size / min(w, h)
     newW = w * k
@@ -96,12 +112,13 @@ def limitSizeByMinDemention(image: Image, size):
     return int(newW), int(newH)
 
 
-def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str):
+def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str, padding: int):
     global cachedData
     result = None
     if cachedData is not None and\
             cachedData.invert == invert and\
             cachedData.upscaler == upscaler and\
+            cachedData.padding == padding and\
             areImagesTheSame(cachedData.image, image) and\
             areImagesTheSame(cachedData.mask, mask):
         result = copy.copy(cachedData.result)
@@ -113,9 +130,13 @@ def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str):
             mask = ImageOps.invert(mask)
         initImage = copy.copy(image)
         image = copy.copy(initImage)
-        newW, newH = limitSizeByMinDemention(image, 256)
+        if padding is not None:
+            image = crop(image, initMask, padding)
+            mask = crop(mask, initMask, padding)
+        newW, newH = limitSizeByMinDimension(image, 256)
         image256 = image.resize((newW, newH))
         mask256 = mask.resize((newW, newH))
+        shared.state.textinfo = "lama inpainting"
         if IS_WEBUI_FORGE:
             tmpImage = lamaCNForgeInpaint(convertIntoCNImageFromat(image256), convertIntoCNImageFromat(mask256))
         else:
@@ -125,10 +146,14 @@ def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str):
         inpaintedImage.paste(tmpImage, mask256)
         shared.state.assign_current_image(inpaintedImage)
         w, h = image.size
+        shared.state.textinfo = "upscaling lama inpainte"
         inpaintedImage = resize_image(0, inpaintedImage.convert('RGB'), w, h, upscaler).convert('RGBA')
         result = image
         result.paste(inpaintedImage, mask)
-        cachedData = CacheData(initImage, initMask, invert, upscaler, copy.copy(result))
+        if padding is not None:
+            result = uncrop(result, initImage, initMask, padding)
+        shared.state.textinfo = ""
+        cachedData = CacheData(initImage, initMask, invert, upscaler, padding, copy.copy(result))
         print("lama inpainted cached")
 
     return result

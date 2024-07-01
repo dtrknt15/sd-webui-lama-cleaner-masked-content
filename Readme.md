@@ -17,6 +17,9 @@ lama cleaner:
 fill:
 ![](images/fill.jpg)
 
+<details>
+<summary>Others</summary>
+
 original:
 ![](images/original.jpg)
 
@@ -26,7 +29,9 @@ latent noise:
 latent nothing:
 ![](images/latent_nothing.jpg)
 
+</details>
 
+For small objects in anime-styled pictures you can also try extension [yandere-inpaint-masked-content](https://github.com/light-and-ray/sd-webui-yandere-inpaint-masked-content)
 
 ## Options
 
