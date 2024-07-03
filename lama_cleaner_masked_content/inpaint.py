@@ -130,13 +130,15 @@ def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str, padding: 
         shared.state.assign_current_image(result)
     else:
         initMask = copy.copy(mask)
+        initMaskMaybeInverted = initMask
         if invert == 1:
             mask = ImageOps.invert(mask)
+            initMaskMaybeInverted = copy.copy(mask)
         initImage = copy.copy(image)
         image = copy.copy(initImage)
         if padding is not None:
-            image = crop(image, initMask, padding)
-            mask = crop(mask, initMask, padding)
+            image = crop(image, initMaskMaybeInverted, padding)
+            mask = crop(mask, initMaskMaybeInverted, padding)
         newW, newH = limitSizeByMinDimension(image, 256)
         image256 = image.resize((newW, newH))
         mask256 = mask.resize((newW, newH))
@@ -155,7 +157,7 @@ def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str, padding: 
         result = image
         result.paste(inpaintedImage, mask)
         if padding is not None:
-            result = uncrop(result, initImage, initMask, padding)
+            result = uncrop(result, initImage, initMaskMaybeInverted, padding)
         shared.state.textinfo = ""
         cachedData = CacheData(initImage, initMask, invert, upscaler, padding, copy.copy(result))
         print("lama inpainted cached")

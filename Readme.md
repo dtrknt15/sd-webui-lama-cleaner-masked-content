@@ -31,6 +31,10 @@ latent nothing:
 
 </details>
 
+Also you can use Lama cleaner in extras tab, if you want to use it without stable diffusion:
+
+![](/images/extras.jpg)
+
 For small objects in anime-styled pictures you can also try extension [yandere-inpaint-masked-content](https://github.com/light-and-ray/sd-webui-yandere-inpaint-masked-content)
 
 ## Options
