@@ -152,7 +152,7 @@ def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str, padding: 
         inpaintedImage.paste(tmpImage, mask256)
         shared.state.assign_current_image(inpaintedImage)
         w, h = image.size
-        shared.state.textinfo = "upscaling lama inpainte"
+        shared.state.textinfo = "upscaling lama inpainted"
         inpaintedImage = resize_image(0, inpaintedImage.convert('RGB'), w, h, upscaler).convert('RGBA')
         result = image
         result.paste(inpaintedImage, mask)
