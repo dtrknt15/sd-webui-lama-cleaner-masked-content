@@ -2,14 +2,26 @@ import copy
 from modules import scripts_postprocessing
 from PIL import Image
 import gradio as gr
+from modules.api.api import encode_pil_to_base64, decode_base64_to_image
 from lama_cleaner_masked_content.options import getLamaUpscaler
-from lama_cleaner_masked_content.inpaint import lamaInpaint
+from lama_cleaner_masked_content.inpaint import lamaInpaint, limitSizeByMinDimension
 
 
 if hasattr(scripts_postprocessing.ScriptPostprocessing, 'process_firstpass'):  # webui >= 1.7
     from modules.ui_components import InputAccordion
 else:
     InputAccordion = None
+
+
+
+def get_current_image(image):
+    if image is None:
+        return
+    maxResolutionOnDetection = 1024
+    image = decode_base64_to_image(image)
+    image = limitSizeByMinDimension(image, maxResolutionOnDetection)
+    image = 'data:image/png;base64,' + encode_pil_to_base64(image).decode()
+    return gr.Image.update(image)
 
 
 
@@ -55,10 +67,6 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 inputs=[mask_brush_color],
                 outputs=[input_mask]
             )
-
-            def get_current_image(image):
-                if image:
-                    return gr.Image.update(image)
 
             dummy_component = gr.Label(visible=False)
             create_canvas.click(
