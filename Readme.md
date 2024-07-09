@@ -39,14 +39,13 @@ For small objects in anime-styled pictures you can also try extension [yandere-i
 
 ## Options
 
-Lama cleaner works in 256p resolution, so you can choose upscaler for it.
+You can adjust few settings:
 
-Go to Settings -> Postprocessing -> Upscaling -> Upscaler for lama cleaner masked content:
+Go to Settings -> Lama Cleaner:
 
 ![](images/options.jpg)
 
-Default is `ESRGAN_4x`. But I recommend to use Waifu2x upscaler from [my extension](https://github.com/light-and-ray/sd-webui-waifu2x-upscaler), because it's very fast and good enough for this purpose
+Default upscaler is `ESRGAN_4x`. But I recommend to use Waifu2x upscaler from [my extension](https://github.com/light-and-ray/sd-webui-waifu2x-upscaler), because it's very fast and good enough for this purpose
 
-You can also add this options in ui, using "Settings for img2img"
+Native lama's dataset resolution is 256p, but it shows good result for highers with little quality of content reduction. 512p is optimal
 
-![](images/options_in_ui.jpg)

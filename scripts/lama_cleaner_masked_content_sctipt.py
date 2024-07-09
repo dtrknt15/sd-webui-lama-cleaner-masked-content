@@ -1,7 +1,7 @@
 import modules.scripts
 from modules.processing import StableDiffusionProcessingImg2Img
 from lama_cleaner_masked_content.inpaint import lamaInpaint
-from lama_cleaner_masked_content.options import getLamaUpscaler
+from lama_cleaner_masked_content.options import getLamaUpscaler, getResolution
 
 
 INPAINTING_FILL_ELEMENTS = ['img2img_inpainting_fill', 'replacer_inpainting_fill']
@@ -36,7 +36,7 @@ class Script(modules.scripts.Script):
         if p.inpaint_full_res:
             padding = p.inpaint_full_res_padding
         p.init_images[0] = lamaInpaint(p.init_images[0], p.image_mask,
-                    p.inpainting_mask_invert, getLamaUpscaler(p), padding)
+                    p.inpainting_mask_invert, getLamaUpscaler(p), padding, getResolution())
         p.inpainting_fill = 1 # original
 
 

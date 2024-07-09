@@ -6,13 +6,7 @@ from dataclasses import dataclass
 from modules.images import resize_image
 from modules import shared, errors, masking
 from modules.processing import apply_overlay
-
-
-try:
-    from lib_controlnet import global_state
-    IS_WEBUI_FORGE = True
-except ImportError:
-    IS_WEBUI_FORGE = False
+from .model import LamaInpaint
 
 
 def crop(image: Image.Image, origMask: Image.Image, padding: int):
@@ -34,7 +28,7 @@ def uncrop(image: Image.Image, origImage: Image.Image, origMask: Image.Image, pa
 
 
 g_cn_HWC3 = None
-def convertIntoCNMaskedImageFromat(image, mask):
+def convertIntoCNMaskedImageFormat(image, mask):
     global g_cn_HWC3
     if g_cn_HWC3 is None:
         try:
@@ -50,7 +44,7 @@ def convertIntoCNMaskedImageFromat(image, mask):
 
 
 
-def convertIntoCNImageFromat(image):
+def convertIntoCNImageFormat(image):
     global g_cn_HWC3
     if g_cn_HWC3 is None:
         from annotator.util import HWC3
@@ -61,20 +55,8 @@ def convertIntoCNImageFromat(image):
 
 
 
-supported_preprocessor = None
+lama_model = LamaInpaint()
 
-
-def lamaCNInpaint(image):
-    global supported_preprocessor
-    if supported_preprocessor is None:
-        from scripts import supported_preprocessor
-    lama = supported_preprocessor.Preprocessor.get_preprocessor('inpaint_only+lama')
-    return lama(image, None).value
-
-
-def lamaCNForgeInpaint(image, mask):
-    lama = global_state.get_preprocessor('inpaint_only+lama')
-    return lama(image, None, input_mask=mask)
 
 
 def convertImageIntoPILFormat(image):
@@ -102,12 +84,13 @@ class CacheData:
     invert: Any
     upscaler: Any
     padding: Any
+    resolution: Any
     result: Any
 
 cachedData = None
 
 
-def limitSizeByMinDimension(image: Image, size):
+def limitSizeByMinDimension(image: Image.Image, size):
     w, h = image.size
     k = size / min(w, h)
     newW = w * k
@@ -116,13 +99,14 @@ def limitSizeByMinDimension(image: Image, size):
     return int(newW), int(newH)
 
 
-def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str, padding: int):
+def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str, padding: int|None, resolution: int):
     global cachedData
     result = None
     if cachedData is not None and\
             cachedData.invert == invert and\
             cachedData.upscaler == upscaler and\
             cachedData.padding == padding and\
+            cachedData.resolution == resolution and\
             areImagesTheSame(cachedData.image, image) and\
             areImagesTheSame(cachedData.mask, mask):
         result = copy.copy(cachedData.result)
@@ -139,17 +123,15 @@ def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str, padding: 
         if padding is not None:
             image = crop(image, initMaskMaybeInverted, padding)
             mask = crop(mask, initMaskMaybeInverted, padding)
-        newW, newH = limitSizeByMinDimension(image, 256)
-        image256 = image.resize((newW, newH))
-        mask256 = mask.resize((newW, newH))
+        resolution = min(*image.size, resolution)
+        newW, newH = limitSizeByMinDimension(image, resolution)
+        imageRes = image.resize((newW, newH))
+        maskRes = mask.resize((newW, newH))
         shared.state.textinfo = "lama inpainting"
-        if IS_WEBUI_FORGE:
-            tmpImage = lamaCNForgeInpaint(convertIntoCNImageFromat(image256), convertIntoCNImageFromat(mask256))
-        else:
-            tmpImage = lamaCNInpaint(convertIntoCNMaskedImageFromat(image256, mask256))
+        tmpImage = lama_model(convertIntoCNMaskedImageFormat(imageRes, maskRes), resolution)
         tmpImage = convertImageIntoPILFormat(tmpImage)
-        inpaintedImage = image256
-        inpaintedImage.paste(tmpImage, mask256)
+        inpaintedImage = imageRes
+        inpaintedImage.paste(tmpImage, maskRes)
         shared.state.assign_current_image(inpaintedImage)
         w, h = image.size
         shared.state.textinfo = "upscaling lama inpainted"
@@ -159,7 +141,7 @@ def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str, padding: 
         if padding is not None:
             result = uncrop(result, initImage, initMaskMaybeInverted, padding)
         shared.state.textinfo = ""
-        cachedData = CacheData(initImage, initMask, invert, upscaler, padding, copy.copy(result))
+        cachedData = CacheData(initImage, initMask, invert, upscaler, padding, resolution, copy.copy(result))
         print("lama inpainted cached")
 
     return result

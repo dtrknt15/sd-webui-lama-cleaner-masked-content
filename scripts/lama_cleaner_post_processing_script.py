@@ -57,6 +57,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
 
             with gr.Row():
                 padding = gr.Slider(label="Padding", minimum=-1, maximum=512, value=90, step=1, info='-1 for no padding')
+                resolution = gr.Slider(label="Resolution", minimum=256, maximum=2048, value=512, step=8)
                 invert = gr.Checkbox(label="Invert mask", value=False)
 
             def update_mask_brush_color(color):
@@ -82,6 +83,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
             'mask_source': mask_source,
             'input_mask': input_mask,
             'padding': padding,
+            'resolution': resolution,
             'invert': invert,
         }
         return controls
@@ -105,6 +107,6 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 mask.paste(draw_mask, draw_mask)
 
         if not mask: return
-        pp.image = lamaInpaint(pp.image, mask, invert, getLamaUpscaler(), padding)
+        pp.image = lamaInpaint(pp.image, mask, invert, getLamaUpscaler(), padding, args['resolution'])
         pp.info[self.name] = f'padding={padding}, invert={invert}'
 
