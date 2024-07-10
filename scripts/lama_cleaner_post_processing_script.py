@@ -56,6 +56,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 )
 
             with gr.Row():
+                blur = gr.Slider(label="Mask blur", minimum=0, maximum=512, value=4, step=1)
                 padding = gr.Slider(label="Padding", minimum=-1, maximum=512, value=90, step=1, info='-1 for no padding')
                 resolution = gr.Slider(label="Resolution", minimum=256, maximum=2048, value=512, step=8)
 
@@ -85,6 +86,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
             'enable': enable,
             'mask_source': mask_source,
             'input_mask': input_mask,
+            'blur': blur,
             'padding': padding,
             'resolution': resolution,
             'invert': invert,
@@ -100,6 +102,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
             padding = args['padding']
         invert = args['invert']
         resolution = args['resolution']
+        blur = args['blur']
 
         mask = None
 
@@ -112,8 +115,8 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 mask.paste(draw_mask, draw_mask)
 
         if not mask: return
-        pp.image = lamaInpaint(pp.image, mask, invert, getLamaUpscaler(), padding, resolution)
-        pp.info[self.name] = f'padding={padding}, resolution={resolution} invert={invert}'
+        pp.image = lamaInpaint(pp.image, mask, invert, getLamaUpscaler(), padding, resolution, blur)
+        pp.info[self.name] = f'blur={blur} padding={padding}, resolution={resolution} invert={invert}'
         if args['includeMask']:
             pp.extra_images.append(mask)
 

@@ -36,7 +36,7 @@ class Script(modules.scripts.Script):
         if p.inpaint_full_res:
             padding = p.inpaint_full_res_padding
         p.init_images[0] = lamaInpaint(p.init_images[0], p.image_mask,
-                    p.inpainting_mask_invert, getLamaUpscaler(p), padding, getResolution())
+                    p.inpainting_mask_invert, getLamaUpscaler(p), padding, getResolution(), p.mask_blur)
         p.inpainting_fill = 1 # original
 
 
