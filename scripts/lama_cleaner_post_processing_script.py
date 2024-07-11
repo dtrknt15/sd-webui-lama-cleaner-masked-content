@@ -35,6 +35,7 @@ except ImportError:
 
 try:
     from yandere_inpaint.inpaint import yandereInpaint
+    from yandere_inpaint.options import getYandereInpaintUpscaler
     models.append("Yandere Inpaint")
 except ImportError:
     pass
@@ -142,7 +143,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
         elif model == "Resynthesizer":
             pp.image = resynthesizerInpaint(pp.image, mask, invert, getResynthesizerUpscaler(), padding, resolution, blur)
         elif model == "Yandere Inpaint":
-            pp.image = yandereInpaint(pp.image, mask, invert, padding)
+            pp.image = yandereInpaint(pp.image, mask, invert, getYandereInpaintUpscaler(), padding, resolution, blur)
 
 
         pp.info[self.name] = f"model='{model}', blur={blur}, padding={padding}, resolution={resolution} invert={invert}"
