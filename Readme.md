@@ -39,6 +39,8 @@ If you have installed this extensions, they appear as models here:
 - https://github.com/light-and-ray/sd-webui-resynthesizer-masked-content
 - https://github.com/light-and-ray/sd-webui-yandere-inpaint-masked-content
 
+If you know any other interesting methods, let me know
+
 ## Options
 
 You can adjust few settings:
