@@ -42,5 +42,5 @@ lama_cleaner_settings = {
         ).info("256 is native"),
 }
 
-shared.options_templates.update(shared.options_section(('lama_cleaner', 'Lama Cleaner'), lama_cleaner_settings))
+shared.options_templates.update(shared.options_section(('extras_inpaint', 'Extras Inpaint'), lama_cleaner_settings))
 

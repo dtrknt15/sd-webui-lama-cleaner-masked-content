@@ -24,9 +24,18 @@ def get_current_image(image):
     return gr.Image.update(image)
 
 
+models = ["Lama Cleaner"]
+try:
+    from yandere_inpaint.inpaint import yandereInpaint
+    models.append("Yandere Inpaint")
+except ImportError:
+    raise
+    pass
+
+
 
 class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
-    name = 'Lama cleaner'
+    name = 'Inpaint'
     order = 110000
 
     def ui(self):
@@ -38,6 +47,8 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
             with gr.Row():
                 if not InputAccordion:
                     enable = gr.Checkbox(False, label='Enable')
+            with gr.Row():
+                model = gr.Radio(label='Model', choices=models, value=models[0])
             with gr.Row():
                 create_canvas = gr.Button('Create canvas')
                 mask_source = gr.CheckboxGroup(['Draw mask', 'Upload mask'], value=['Draw mask'], label="Canvas mask source")
@@ -84,6 +95,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
 
         controls = {
             'enable': enable,
+            'model': model,
             'mask_source': mask_source,
             'input_mask': input_mask,
             'blur': blur,
@@ -100,6 +112,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
         padding = None
         if args['padding'] != -1:
             padding = args['padding']
+        model = args['model']
         invert = args['invert']
         resolution = args['resolution']
         blur = args['blur']
@@ -115,8 +128,14 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 mask.paste(draw_mask, draw_mask)
 
         if not mask: return
-        pp.image = lamaInpaint(pp.image, mask, invert, getLamaUpscaler(), padding, resolution, blur)
-        pp.info[self.name] = f'blur={blur} padding={padding}, resolution={resolution} invert={invert}'
+
+        if model == "Lama Cleaner":
+            pp.image = lamaInpaint(pp.image, mask, invert, getLamaUpscaler(), padding, resolution, blur)
+        elif model == "Yandere Inpaint":
+            pp.image = yandereInpaint(pp.image, mask, invert, padding)
+
+
+        pp.info[self.name] = f'model="{model}",blur={blur}, padding={padding}, resolution={resolution} invert={invert}'
         if args['includeMask']:
             pp.extra_images.append(mask)
 
