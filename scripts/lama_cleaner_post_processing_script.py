@@ -76,7 +76,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 )
 
             with gr.Row():
-                blur = gr.Slider(label="Mask blur", minimum=0, maximum=512, value=4, step=1)
+                blur = gr.Slider(label="Mask blur", minimum=0, maximum=256, value=4, step=1)
                 padding = gr.Slider(label="Padding", minimum=-1, maximum=512, value=90, step=1, info='-1 for no padding')
                 resolution = gr.Slider(label="Resolution", minimum=256, maximum=2048, value=512, step=8)
 
