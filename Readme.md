@@ -35,13 +35,15 @@ Also you can use Lama cleaner in extras tab, if you want to use it without stabl
 
 ![](/images/extras.jpg)
 
-For small objects in anime-styled pictures you can also try extension [yandere-inpaint-masked-content](https://github.com/light-and-ray/sd-webui-yandere-inpaint-masked-content)
+If you have installed this extensions, they appear as models here:
+- https://github.com/light-and-ray/sd-webui-resynthesizer-masked-content
+- https://github.com/light-and-ray/sd-webui-yandere-inpaint-masked-content
 
 ## Options
 
 You can adjust few settings:
 
-Go to Settings -> Lama Cleaner:
+Go to Settings -> Extras Inpaint:
 
 ![](images/options.jpg)
 
