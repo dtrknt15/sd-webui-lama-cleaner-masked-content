@@ -45,7 +45,7 @@ except ImportError:
 
 class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
     name = 'Inpaint'
-    order = 110000
+    order = 17500
 
     def ui(self):
         with (
