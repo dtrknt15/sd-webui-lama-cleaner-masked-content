@@ -25,12 +25,20 @@ def get_current_image(image):
 
 
 models = ["Lama Cleaner"]
+
+try:
+    from resynthesizer_webui.inpaint import resynthesizerInpaint
+    from resynthesizer_webui.options import getResynthesizerUpscaler
+    models.append("Resynthesizer")
+except ImportError:
+    pass
+
 try:
     from yandere_inpaint.inpaint import yandereInpaint
     models.append("Yandere Inpaint")
 except ImportError:
-    raise
     pass
+
 
 
 
@@ -131,11 +139,13 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
 
         if model == "Lama Cleaner":
             pp.image = lamaInpaint(pp.image, mask, invert, getLamaUpscaler(), padding, resolution, blur)
+        elif model == "Resynthesizer":
+            pp.image = resynthesizerInpaint(pp.image, mask, invert, getResynthesizerUpscaler(), padding, resolution, blur)
         elif model == "Yandere Inpaint":
             pp.image = yandereInpaint(pp.image, mask, invert, padding)
 
 
-        pp.info[self.name] = f'model="{model}",blur={blur}, padding={padding}, resolution={resolution} invert={invert}'
+        pp.info[self.name] = f"model='{model}', blur={blur}, padding={padding}, resolution={resolution} invert={invert}"
         if args['includeMask']:
             pp.extra_images.append(mask)
 
