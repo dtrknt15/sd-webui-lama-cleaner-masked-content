@@ -18,7 +18,7 @@ else:
 def get_current_image(image):
     if image is None:
         return
-    maxResolutionOnDetection = 1024
+    maxResolutionOnDetection = 1280
     image = decode_base64_to_image(image)
     image = image.resize(limitSizeByMinDimension(image, maxResolutionOnDetection))
     image = 'data:image/png;base64,' + encode_pil_to_base64(image).decode()
@@ -83,7 +83,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 )
 
             with gr.Row():
-                blur = gr.Slider(label="Mask blur", minimum=0, maximum=256, value=4, step=1)
+                blur = gr.Slider(label="Mask blur", minimum=0, maximum=128, value=2, step=1)
                 padding = gr.Slider(label="Padding", minimum=-1, maximum=512, value=90, step=1, info='-1 for no padding')
                 resolution = gr.Slider(label="Resolution", minimum=256, maximum=2048, value=512, step=8)
                 seed = gr.Number(value=-1, label="Seed", minimum=-1, visible=False, step=1)
