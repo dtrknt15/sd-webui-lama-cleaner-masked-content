@@ -38,8 +38,7 @@ Also you can use Lama cleaner in extras tab, if you want to use it without stabl
 If you have installed this extensions, they appear as models here:
 - https://github.com/light-and-ray/sd-webui-resynthesizer-masked-content
 - https://github.com/light-and-ray/sd-webui-yandere-inpaint-masked-content
-
-If you know any other interesting methods, let me know
+- https://github.com/light-and-ray/sd-webui-manga-inpainting
 
 ## Options
 

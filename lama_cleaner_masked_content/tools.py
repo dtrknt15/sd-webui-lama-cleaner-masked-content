@@ -1,5 +1,5 @@
 import numpy as np
-import cv2
+import cv2, random
 from PIL import Image, ImageChops
 from modules import shared, errors, masking
 from modules.processing import apply_overlay
@@ -89,3 +89,9 @@ def applyMaskBlur(image_mask, mask_blur):
         np_mask = cv2.GaussianBlur(np_mask, (kernel_size, kernel_size), mask_blur)
         image_mask = Image.fromarray(np_mask).convert(originalMode)
     return image_mask
+
+
+def generateSeed():
+    return int(random.randrange(4294967294))
+
+

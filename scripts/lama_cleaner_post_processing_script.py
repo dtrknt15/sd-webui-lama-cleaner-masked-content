@@ -5,6 +5,7 @@ import gradio as gr
 from modules.api.api import encode_pil_to_base64, decode_base64_to_image
 from lama_cleaner_masked_content.options import getLamaUpscaler
 from lama_cleaner_masked_content.inpaint import lamaInpaint, limitSizeByMinDimension
+from lama_cleaner_masked_content.tools import generateSeed
 
 
 if hasattr(scripts_postprocessing.ScriptPostprocessing, 'process_firstpass'):  # webui >= 1.7
@@ -37,6 +38,12 @@ try:
     from yandere_inpaint.inpaint import yandereInpaint
     from yandere_inpaint.options import getYandereInpaintUpscaler
     models.append("Yandere Inpaint")
+except ImportError:
+    pass
+
+try:
+    from manga_inpainting.inpaint import mangaInpaint
+    models.append("Manga Inpainting")
 except ImportError:
     pass
 
@@ -79,6 +86,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 blur = gr.Slider(label="Mask blur", minimum=0, maximum=256, value=4, step=1)
                 padding = gr.Slider(label="Padding", minimum=-1, maximum=512, value=90, step=1, info='-1 for no padding')
                 resolution = gr.Slider(label="Resolution", minimum=256, maximum=2048, value=512, step=8)
+                seed = gr.Number(value=-1, label="Seed", minimum=-1, visible=False)
 
             with gr.Row():
                 invert = gr.Checkbox(label="Invert mask", value=False)
@@ -102,6 +110,17 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 postprocess=False,
             )
 
+            def onModelChanged(model: str):
+                result = None
+                if model == "Manga Inpainting":
+                    result = [True, True, False, True]
+                else:
+                    result = [True, True, True, False]
+
+                return [gr.update(visible=x) for x in result]
+
+            model.change(fn=onModelChanged, inputs=[model], outputs=[blur, padding, resolution, seed], show_progress=False)
+
         controls = {
             'enable': enable,
             'model': model,
@@ -110,6 +129,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
             'blur': blur,
             'padding': padding,
             'resolution': resolution,
+            'seed': seed,
             'invert': invert,
             'includeMask': includeMask,
         }
@@ -125,6 +145,8 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
         invert = args['invert']
         resolution = args['resolution']
         blur = args['blur']
+        seed = args['seed']
+        if seed == -1: seed = generateSeed()
 
         mask = None
 
@@ -144,9 +166,16 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
             pp.image = resynthesizerInpaint(pp.image, mask, invert, getResynthesizerUpscaler(), padding, resolution, blur)
         elif model == "Yandere Inpaint":
             pp.image = yandereInpaint(pp.image, mask, invert, getYandereInpaintUpscaler(), padding, resolution, blur)
+        elif model == "Manga Inpainting":
+            pp.image = mangaInpaint(pp.image, mask, invert, padding, seed, blur)
 
 
-        pp.info[self.name] = f"model='{model}', blur={blur}, padding={padding}, resolution={resolution} invert={invert}"
+        info = f"model='{model}', blur={blur}, padding={padding}, invert={invert}"
+        if model == "Manga Inpainting":
+            info += f", seed={seed}"
+        else:
+            info += f", resolution={resolution}"
+        pp.info[self.name] = info
         if args['includeMask']:
             pp.extra_images.append(mask)
 
