@@ -5,7 +5,7 @@ import gradio as gr
 from modules.api.api import encode_pil_to_base64, decode_base64_to_image
 from lama_cleaner_masked_content.options import getLamaUpscaler
 from lama_cleaner_masked_content.inpaint import lamaInpaint, limitSizeByMinDimension
-from lama_cleaner_masked_content.tools import generateSeed, openCVInpaint
+from lama_cleaner_masked_content.tools import generateSeed, openCVInpaint, insertBackground
 
 
 if hasattr(scripts_postprocessing.ScriptPostprocessing, 'process_firstpass'):  # webui >= 1.7
@@ -49,6 +49,7 @@ except ImportError:
 
 
 models.append('OpenCV')
+models.append('Insert background')
 
 
 
@@ -94,6 +95,8 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 radius = gr.Slider(value=3.0, minimum=0.0, maximum=100.0, step=0.1, label="Radius (Blur)", visible=False)
                 openCVFlag = gr.Radio(value='INPAINT_TELEA', choices=['INPAINT_TELEA', 'INPAINT_NS'], visible=False, label="Flag")
 
+                background = gr.Image(label='Background', visible='False', source="upload", type='pil')
+
             with gr.Row():
                 invert = gr.Checkbox(label="Invert mask", value=False)
                 includeMask = gr.Checkbox(label="Include mask", value=False)
@@ -119,16 +122,18 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
             def onModelChanged(model: str):
                 result = None
                 if model == "Manga Inpainting":
-                    result = [True, True, False,  True,  False, False]
+                    result = [True, True, False,  True,  False, False, False]
                 elif model == "OpenCV":
-                    result = [True, False, False,  False,  True, True]
+                    result = [True, False, False,  False,  True, True, False]
+                elif model == 'Insert background':
+                    result = [True, False, False,  False,  False, False, True]
                 else:
-                    result = [True, True, True,  False,  False, False]
+                    result = [True, True, True,  False,  False, False, False]
 
                 return [gr.update(visible=x) for x in result]
 
             model.change(fn=onModelChanged, inputs=[model],
-                         outputs=[blur, padding, resolution,  seed,  radius, openCVFlag],
+                         outputs=[blur, padding, resolution,  seed,  radius, openCVFlag, background],
                          show_progress=False)
 
         controls = {
@@ -142,6 +147,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
             'seed': seed,
             'radius': radius,
             'openCVFlag': openCVFlag,
+            'background': background,
             'invert': invert,
             'includeMask': includeMask,
         }
@@ -182,17 +188,21 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
             pp.image = mangaInpaint(pp.image, mask, invert, padding, seed, blur)
         elif model == "OpenCV":
             pp.image = openCVInpaint(pp.image, mask, args['radius'], args['openCVFlag'], blur, invert)
+        elif model == "Insert background":
+            pp.image = insertBackground(pp.image, mask, args['background'], blur, invert)
 
 
         info = f"model='{model}'"
-        if model != "OpenCV":
+        if model not in ("OpenCV", "Insert background"):
             info += f", blur={blur}, padding={padding}, invert={invert}"
             if model == "Manga Inpainting":
                 info += f", seed={seed}"
             else:
                 info += f", resolution={resolution}"
         else:
-            info += f", blur={blur}, invert={invert}, radius={args['radius']}, openCVFlag={args['openCVFlag']}"
+            info += f", blur={blur}, invert={invert}"
+            if model == "OpenCV":
+                info += f", radius={args['radius']}, openCVFlag={args['openCVFlag']}"
 
         pp.info[self.name] = info
         if args['includeMask']:

@@ -41,6 +41,7 @@ If you have installed this extensions, they appear as models here:
 - https://github.com/light-and-ray/sd-webui-manga-inpainting
 
 - \+ inpainting from OpenCV as bonus
+- "Insert background" inserts image mask into target image
 
 ## Options
 

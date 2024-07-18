@@ -81,7 +81,7 @@ def limitSizeByMinDimension(image: Image.Image, size):
 
 
 
-def applyMaskBlur(image_mask, mask_blur):
+def applyMaskBlur(image_mask, mask_blur) -> Image.Image:
     originalMode = image_mask.mode
     if mask_blur > 0:
         np_mask = np.array(image_mask).astype(np.uint8)
@@ -96,7 +96,7 @@ def generateSeed():
 
 
 
-def openCVInpaint(image: Image.Image, mask: Image.Image, radius: float, flag: str, blur: int, invert: bool):
+def openCVInpaint(image: Image.Image, mask: Image.Image, radius: float, flag: str, blur: int, invert: bool) -> Image.Image:
     mask = applyMaskBlur(mask, blur)
     if invert:
         mask = ImageChops.invert(mask)
@@ -109,6 +109,14 @@ def openCVInpaint(image: Image.Image, mask: Image.Image, radius: float, flag: st
     result = Image.fromarray(result)
     return result
 
+
+def insertBackground(image: Image.Image, mask: Image.Image, background: Image.Image, blur: int, invert: bool) -> Image.Image:
+    mask = applyMaskBlur(mask, blur)
+    if invert:
+        mask = ImageChops.invert(mask)
+    result = image.copy()
+    result.paste(background.resize(image.size).convert(image.mode), mask.resize(image.size))
+    return result
 
 
 
