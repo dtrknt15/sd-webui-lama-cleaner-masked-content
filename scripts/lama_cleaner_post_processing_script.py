@@ -91,7 +91,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
 
                 seed = gr.Number(value=-1, label="Seed", minimum=-1, visible=False, step=1)
 
-                radius = gr.Slider(value=3.0, minimum=0.0, maximum=20.0, step=0.1, label="Radius (Blur)", visible=False)
+                radius = gr.Slider(value=3.0, minimum=0.0, maximum=100.0, step=0.1, label="Radius (Blur)", visible=False)
                 openCVFlag = gr.Radio(value='INPAINT_TELEA', choices=['INPAINT_TELEA', 'INPAINT_NS'], visible=False, label="Flag")
 
             with gr.Row():
