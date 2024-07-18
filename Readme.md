@@ -40,6 +40,8 @@ If you have installed this extensions, they appear as models here:
 - https://github.com/light-and-ray/sd-webui-yandere-inpaint-masked-content
 - https://github.com/light-and-ray/sd-webui-manga-inpainting
 
+- \+ inpainting from OpenCV as bonus
+
 ## Options
 
 You can adjust few settings:
