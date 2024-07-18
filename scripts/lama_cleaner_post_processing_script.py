@@ -95,7 +95,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 radius = gr.Slider(value=3.0, minimum=0.0, maximum=100.0, step=0.1, label="Radius (Blur)", visible=False)
                 openCVFlag = gr.Radio(value='INPAINT_TELEA', choices=['INPAINT_TELEA', 'INPAINT_NS'], visible=False, label="Flag")
 
-                background = gr.Image(label='Background', visible='False', source="upload", type='pil')
+                background = gr.Image(label='Background', visible=False, source="upload", type='pil')
 
             with gr.Row():
                 invert = gr.Checkbox(label="Invert mask", value=False)
