@@ -121,7 +121,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
                 if model == "Manga Inpainting":
                     result = [True, True, False,  True,  False, False]
                 elif model == "OpenCV":
-                    result = [False, False, False,  False,  True, True]
+                    result = [True, False, False,  False,  True, True]
                 else:
                     result = [True, True, True,  False,  False, False]
 
@@ -181,7 +181,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
         elif model == "Manga Inpainting":
             pp.image = mangaInpaint(pp.image, mask, invert, padding, seed, blur)
         elif model == "OpenCV":
-            pp.image = openCVInpaint(pp.image, mask, args['radius'], args['openCVFlag'])
+            pp.image = openCVInpaint(pp.image, mask, args['radius'], args['openCVFlag'], blur, invert)
 
 
         info = f"model='{model}'"
@@ -192,7 +192,7 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
             else:
                 info += f", resolution={resolution}"
         else:
-            info += f", radius={args['radius']}, openCVFlag={args['openCVFlag']}"
+            info += f", blur={blur}, invert={invert}, radius={args['radius']}, openCVFlag={args['openCVFlag']}"
 
         pp.info[self.name] = info
         if args['includeMask']:

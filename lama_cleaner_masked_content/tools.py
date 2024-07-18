@@ -96,7 +96,10 @@ def generateSeed():
 
 
 
-def openCVInpaint(image: Image.Image, mask: Image.Image, radius: float, flag: str):
+def openCVInpaint(image: Image.Image, mask: Image.Image, radius: float, flag: str, blur: int, invert: bool):
+    mask = applyMaskBlur(mask, blur)
+    if invert:
+        mask = ImageChops.invert(mask)
     image = np.array(image.convert('RGB'))
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     mask = np.array(mask.convert('L'))
