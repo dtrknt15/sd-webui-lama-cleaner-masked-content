@@ -52,10 +52,10 @@ def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str, padding: 
         image = copy.copy(initImage)
         if padding is not None:
             maskNotCropped = mask
-            image = crop(image, maskNotCropped, padding)
-            mask = crop(mask, maskNotCropped, padding)
+            image = crop(image, maskNotCropped, padding, resolution)
+            mask = crop(mask, maskNotCropped, padding, resolution)
         resolution = min(*image.size, resolution)
-        newW, newH = limitSizeByMinDimension(image, resolution)
+        newW, newH = limitSizeByMinDimension(image.size, resolution)
         imageRes = image.resize((newW, newH))
         maskRes = mask.resize((newW, newH))
         shared.state.textinfo = "lama inpainting"

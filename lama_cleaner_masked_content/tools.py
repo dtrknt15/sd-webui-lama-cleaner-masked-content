@@ -5,9 +5,13 @@ from modules import shared, errors, masking
 from modules.processing import apply_overlay
 
 
-def crop(image: Image.Image, origMask: Image.Image, padding: int):
+def crop(image: Image.Image, origMask: Image.Image, padding: int, resolution: int):
     crop_region = masking.get_crop_region(origMask, padding)
     crop_region = masking.expand_crop_region(crop_region, 1, 1, origMask.width, origMask.height)
+    if shared.opts.data.get('integer_only_masked', False):
+        x1, y1, x2, y2 = crop_region
+        newW, newH = limitSizeByMinDimension((x2-x1, y2-y1), resolution)
+        crop_region = masking.fix_crop_region_integer_scale(crop_region, newW, newH, origMask.width, origMask.height)
     return image.crop(crop_region)
 
 def uncrop(image: Image.Image, origImage: Image.Image, origMask: Image.Image, padding: int):
@@ -71,9 +75,9 @@ def areImagesTheSame(image_one, image_two):
 
 
 
-def limitSizeByMinDimension(image: Image.Image, size):
-    w, h = image.size
-    k = size / min(w, h)
+def limitSizeByMinDimension(size: tuple, limit: int):
+    w, h = size
+    k = limit / min(w, h)
     newW = w * k
     newH = h * k
 

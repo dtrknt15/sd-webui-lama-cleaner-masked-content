@@ -20,7 +20,7 @@ def get_current_image(image):
         return
     maxResolutionOnDetection = 1280
     image = decode_base64_to_image(image)
-    image = image.resize(limitSizeByMinDimension(image, maxResolutionOnDetection))
+    image = image.resize(limitSizeByMinDimension(image.size, maxResolutionOnDetection))
     image = 'data:image/png;base64,' + encode_pil_to_base64(image).decode()
     return gr.Image.update(image)
 
