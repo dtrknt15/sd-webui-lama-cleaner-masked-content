@@ -51,7 +51,7 @@ Go to Settings -> Extras Inpaint:
 
 ![](images/options.jpg)
 
-Default upscaler is `ESRGAN_4x`. I recommend to use span upscalers e.g. [4x-Nomos8k-span-otf-medium](https://openmodeldb.info/models/4x-Nomos8k-span-otf-medium), because they work instantly and show amazing results
+<!-- Default upscaler is `ESRGAN_4x`. I recommend to use span upscalers e.g. [4x-Nomos8k-span-otf-medium](https://openmodeldb.info/models/4x-Nomos8k-span-otf-medium), because they work instantly and show amazing results -->
 
 Native lama's dataset resolution is 256p, but it shows good result for highers with little quality of content reduction. 512p is optimal
 

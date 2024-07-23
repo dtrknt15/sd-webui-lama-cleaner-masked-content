@@ -28,7 +28,7 @@ lama_cleaner_settings = {
             "Upscaler for lama cleaner masked content",
             gr.Dropdown,
             lambda: {"choices": [x.name for x in shared.sd_upscalers]},
-        ).info("I recommend to use span upscalers e.g. 4x-Nomos8k-span-otf-medium, because they work instantly and show amazing results"),
+        ), #.info("I recommend to use span upscalers e.g. 4x-Nomos8k-span-otf-medium, because they work instantly and show amazing results"),
 
     'lama_cleaner_as_masked_content_resolution': shared.OptionInfo(
             512,
