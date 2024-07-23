@@ -8,9 +8,16 @@ from .model import LamaInpaint
 from .tools import (crop, uncrop, convertImageIntoPILFormat, convertIntoCNMaskedImageFormat, areImagesTheSame,
                     applyMaskBlur, limitSizeByMinDimension
 )
-from .colorfix import wavelet_color_fix
 lama_model = LamaInpaint()
 
+colorfix = None
+try:
+    from modules import colorfix
+except ImportError:
+    try:
+        from srmodule import colorfix
+    except ImportError:
+        pass
 
 
 
@@ -70,7 +77,8 @@ def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str, padding: 
         inpaintedImage = inpaintedImage.convert('RGB')
         beforeUpscale = inpaintedImage
         inpaintedImage = resize_image(0, inpaintedImage, w, h, upscaler)
-        inpaintedImage = wavelet_color_fix(inpaintedImage, beforeUpscale.resize(inpaintedImage.size)).convert('RGBA')
+        if colorfix:
+            inpaintedImage = colorfix.wavelet_color_fix(inpaintedImage, beforeUpscale.resize(inpaintedImage.size)).convert('RGBA')
         result = image
         result.paste(inpaintedImage, mask)
         if padding is not None:
