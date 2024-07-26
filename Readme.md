@@ -1,6 +1,6 @@
 # Lama cleaner as masked content
 
-This extenstion for [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) adds new value of "Masked content" field in img2img -> inpaint tab. It uses preprocessor from controlnet extension, and allows use it with regular inpainting. So this extension requires [Mikubill/sd-webui-controlnet](https://github.com/Mikubill/sd-webui-controlnet)
+This extenstion for [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) adds new value of "Masked content" field in img2img -> inpaint tab. Lama is a NN model useful for removing objects from pictures
 
 This option means how to preprocess masked content before pass it into stable diffusion. It useful when you want to remove object in photo. Use inpainting model and denoising straight +-0.4
 
@@ -40,6 +40,7 @@ If you have installed this extensions, they appear as models here:
 - https://github.com/light-and-ray/sd-webui-yandere-inpaint-masked-content
 - https://github.com/light-and-ray/sd-webui-manga-inpainting
 
+- \+ MAT - another NN inpaint model
 - \+ inpainting from OpenCV as bonus
 - "Insert background" inserts image into target image. Useful for massive compositing in batch
 
