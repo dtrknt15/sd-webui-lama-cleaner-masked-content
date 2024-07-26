@@ -1,6 +1,6 @@
 import os
 import torch
-from modules import modelloader, devices, torch_utils
+from modules import modelloader, devices, torch_utils, shared
 from modules.upscaler_utils import torch_bgr_to_pil_image, pil_image_to_torch_bgr
 from .tools import WEIGHTS_PATH, ensureAllModelsDownloaded
 
@@ -12,12 +12,15 @@ def processModel(model, image, mask):
         tensor_image = pil_image_to_torch_bgr(image).unsqueeze(0)  # add batch dimension
         tensor_image = tensor_image.to(device=param.device, dtype=param.dtype)
 
-        tensor_mask = pil_image_to_torch_bgr(mask.convert('1')).unsqueeze(0)[:, 0:1, :, :]
+        tensor_mask = pil_image_to_torch_bgr(mask.convert('1', dither=False)).unsqueeze(0)[:, 0:1, :, :]
         tensor_mask = tensor_mask.to(device=param.device, dtype=param.dtype)
 
         with devices.without_autocast():
             res = torch_bgr_to_pil_image(model(tensor_image, mask=tensor_mask))
-    model.cpu()
+
+    if shared.cmd_opts.lowvram or shared.cmd_opts.medvram:
+        model.cpu()
+
     return res
 
 
