@@ -47,7 +47,7 @@ try:
 except ImportError:
     pass
 
-
+models.append('MAT')
 models.append('OpenCV')
 models.append('Insert background')
 
@@ -190,6 +190,8 @@ class ScriptPostprocessing(scripts_postprocessing.ScriptPostprocessing):
             pp.image = openCVInpaint(pp.image, mask, args['radius'], args['openCVFlag'], blur, invert)
         elif model == "Insert background":
             pp.image = insertBackground(pp.image, mask, args['background'], blur, invert)
+        elif model == "MAT":
+            pp.image = lamaInpaint(pp.image, mask, invert, getLamaUpscaler(), padding, resolution, blur, model='mat')
 
 
         info = f"model='{model}'"

@@ -1,8 +1,12 @@
 import numpy as np
-import cv2, random
+import cv2, random, os
 from PIL import Image, ImageChops
 from modules import shared, errors, masking
+from modules.modelloader import load_file_from_url
 from modules.processing import apply_overlay
+
+
+WEIGHTS_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'weights')
 
 
 def crop(image: Image.Image, origMask: Image.Image, padding: int, resolution: int):
@@ -24,42 +28,6 @@ def uncrop(image: Image.Image, origImage: Image.Image, origMask: Image.Image, pa
     overlay_image = image_masked.convert('RGBA')
     return apply_overlay(image.convert("RGB"), paste_to, overlay_image)[0].convert("RGBA")
 
-
-
-
-g_cn_HWC3 = None
-def convertIntoCNMaskedImageFormat(image, mask):
-    global g_cn_HWC3
-    if g_cn_HWC3 is None:
-        try:
-            from annotator.util import HWC3
-            g_cn_HWC3 = HWC3
-        except ImportError as e:
-            errors.report(e, exc_info=True)
-
-    color = g_cn_HWC3(np.asarray(image).astype(np.uint8))
-    alpha = g_cn_HWC3(np.asarray(mask.convert('L')).astype(np.uint8))[:, :, 0:1]
-    image = np.concatenate([color, alpha], axis=2)
-    return image
-
-
-
-def convertIntoCNImageFormat(image):
-    global g_cn_HWC3
-    if g_cn_HWC3 is None:
-        from annotator.util import HWC3
-        g_cn_HWC3 = HWC3
-
-    color = g_cn_HWC3(np.asarray(image).astype(np.uint8))
-    return color
-
-
-
-
-def convertImageIntoPILFormat(image):
-    return Image.fromarray(
-        np.ascontiguousarray(image.clip(0, 255).astype(np.uint8)).copy()
-    )
 
 
 def areImagesTheSame(image_one, image_two):
@@ -123,4 +91,13 @@ def insertBackground(image: Image.Image, mask: Image.Image, background: Image.Im
     return result
 
 
+def ensureAllModelsDownloaded():
+    os.makedirs(WEIGHTS_PATH, exist_ok=True)
+
+    urls = ['https://github.com/Sanster/models/releases/download/add_big_lama/big-lama.pt',
+            'https://github.com/Sanster/models/releases/download/add_mat/Places_512_FullData_G.pth']
+    for url in urls:
+        if os.path.exists(os.path.join(WEIGHTS_PATH, url.split('/')[-1])):
+            continue
+        load_file_from_url(url=url, model_dir=WEIGHTS_PATH)
 

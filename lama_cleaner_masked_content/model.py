@@ -1,34 +1,24 @@
-import cv2
-import numpy as np
+import os
+import torch
+from modules import modelloader, devices, torch_utils
+from modules.upscaler_utils import torch_bgr_to_pil_image, pil_image_to_torch_bgr
+from .tools import WEIGHTS_PATH, ensureAllModelsDownloaded
 
 
-def pad64(x):
-    return int(np.ceil(float(x) / 64.0) * 64 - x)
+def processModel(model, image, mask):
+    param = torch_utils.get_param(model)
+    model.to(param.device)
+    with torch.no_grad():
+        tensor_image = pil_image_to_torch_bgr(image).unsqueeze(0)  # add batch dimension
+        tensor_image = tensor_image.to(device=param.device, dtype=param.dtype)
 
-def safer_memory(x):
-    # Fix many MAC/AMD problems
-    return np.ascontiguousarray(x.copy()).copy()
+        tensor_mask = pil_image_to_torch_bgr(mask.convert('1')).unsqueeze(0)[:, 0:1, :, :]
+        tensor_mask = tensor_mask.to(device=param.device, dtype=param.dtype)
 
-def resize_image_with_pad(img: np.ndarray, resolution: int):
-    # Convert greyscale image to RGB.
-    if img.ndim == 2:
-        img = img[:, :, None]
-        img = np.concatenate([img, img, img], axis=2)
-
-    H_raw, W_raw, _ = img.shape
-    k = float(resolution) / float(min(H_raw, W_raw))
-    interpolation = cv2.INTER_CUBIC if k > 1 else cv2.INTER_AREA
-    H_target = int(np.round(float(H_raw) * k))
-    W_target = int(np.round(float(W_raw) * k))
-    img = cv2.resize(img, (W_target, H_target), interpolation=interpolation)
-    H_pad, W_pad = pad64(H_target), pad64(W_target)
-    img_padded = np.pad(img, [[0, H_pad], [0, W_pad], [0, 0]], mode="edge")
-
-    def remove_pad(x):
-        return safer_memory(x[:H_target, :W_target])
-
-    return safer_memory(img_padded), remove_pad
-
+        with devices.without_autocast():
+            res = torch_bgr_to_pil_image(model(tensor_image, mask=tensor_mask))
+    model.cpu()
+    return res
 
 
 class LamaInpaint():
@@ -37,32 +27,29 @@ class LamaInpaint():
 
     def __call__(
         self,
-        input_image,
-        res,
+        image,
+        mask,
     ):
-        img = input_image
-        H, W, C = img.shape
-        assert C == 4, "No mask is provided!"
-        raw_color = img[:, :, 0:3].copy()
-        raw_mask = img[:, :, 3:4].copy()
-
-        img_res, remove_pad = resize_image_with_pad(img, res)
-
         if self.model is None:
-            from annotator.lama import LamaInpainting
-            self.model = LamaInpainting()
+            ensureAllModelsDownloaded()
+            self.model = modelloader.load_spandrel_model(os.path.join(WEIGHTS_PATH, 'big-lama.pt'),
+                                                device=devices.device, expected_architecture="LaMa")
 
-        # applied auto inversion
-        prd_color = self.model(img_res)
-        prd_color = remove_pad(prd_color)
-        prd_color = cv2.resize(prd_color, (W, H))
+        return processModel(self.model, image, mask)
 
-        alpha = raw_mask.astype(np.float32) / 255.0
-        fin_color = prd_color.astype(np.float32) * alpha + raw_color.astype(
-            np.float32
-        ) * (1 - alpha)
-        fin_color = fin_color.clip(0, 255).astype(np.uint8)
 
-        result = np.concatenate([fin_color, raw_mask], axis=2)
-        return result
+class MATInpaint():
+    def __init__(self):
+        self.model = None
 
+    def __call__(
+        self,
+        image,
+        mask,
+    ):
+        if self.model is None:
+            ensureAllModelsDownloaded()
+            self.model = modelloader.load_spandrel_model(os.path.join(WEIGHTS_PATH, 'Places_512_FullData_G.pth'),
+                                                device=devices.device, expected_architecture="MAT")
+
+        return processModel(self.model, image, mask)
