@@ -69,23 +69,22 @@ def generateSeed():
 
 
 def openCVInpaint(image: Image.Image, mask: Image.Image, radius: float, flag: str, blur: int, invert: bool) -> Image.Image:
-    mask = applyMaskBlur(mask, blur)
     if invert:
         mask = ImageChops.invert(mask)
+    mask = applyMaskBlur(mask, blur)
     image = np.array(image.convert('RGB'))
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     mask = np.array(mask.convert('1').convert('L'))
     result = cv2.inpaint(image, mask, radius, getattr(cv2, flag))
     result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-    cv2.INPAINT_NS
     result = Image.fromarray(result)
     return result
 
 
 def insertBackground(image: Image.Image, mask: Image.Image, background: Image.Image, blur: int, invert: bool) -> Image.Image:
-    mask = applyMaskBlur(mask, blur)
     if invert:
         mask = ImageChops.invert(mask)
+    mask = applyMaskBlur(mask, blur)
     result = image.copy()
     result.paste(background.resize(image.size).convert(image.mode), mask.resize(image.size))
     return result

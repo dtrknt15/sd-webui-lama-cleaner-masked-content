@@ -36,7 +36,7 @@ class LamaInpaint():
         if self.model is None:
             ensureAllModelsDownloaded()
             self.model = modelloader.load_spandrel_model(os.path.join(WEIGHTS_PATH, 'big-lama.pt'),
-                                                device=devices.device, expected_architecture="LaMa")
+                                device=devices.device, expected_architecture="LaMa").model
 
         return processModel(self.model, image, mask)
 
@@ -53,6 +53,6 @@ class MATInpaint():
         if self.model is None:
             ensureAllModelsDownloaded()
             self.model = modelloader.load_spandrel_model(os.path.join(WEIGHTS_PATH, 'Places_512_FullData_G.pth'),
-                                                device=devices.device, expected_architecture="MAT")
+                            device=devices.device, expected_architecture="MAT").model
 
         return processModel(self.model, image, mask)
