@@ -1,5 +1,7 @@
 # Lama cleaner as masked content
 
+注意: この修正は Forge Neo (Stable Diffusion WebUI Forge - Neo) 上でのみ動作確認済みの個人用変更です。一般配布・他環境での動作は保証されません。
+
 This extenstion for [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) adds new value of "Masked content" field in img2img -> inpaint tab. Lama is a NN model useful for removing objects from pictures
 
 This option means how to preprocess masked content before pass it into stable diffusion. It useful when you want to remove object in photo. Use inpainting model and denoising straight +-0.4
