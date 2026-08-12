@@ -6,7 +6,11 @@ from modules.modelloader import load_file_from_url
 from modules.processing import apply_overlay
 
 
-WEIGHTS_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'weights')
+try:
+    from modules import paths
+    WEIGHTS_PATH = os.path.join(paths.models_path, "lama_cleaner_masked_content")
+except Exception:
+    WEIGHTS_PATH = os.path.normpath(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', '..', 'weights', 'lama_cleaner_masked_content'))
 
 
 def crop(image: Image.Image, origMask: Image.Image, padding: int, resolution: int):
